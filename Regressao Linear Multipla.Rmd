@@ -1,0 +1,340 @@
+# Regressão Linear Múltipla
+
+------------------------------------------------------------------------
+
+## Modelo Estatístico - Notação Matricial
+
+Tem-se uma regressão linear múltipla quando se admite que a variável resposta $Y$ é a função de duas ou mais variáveis explicativas (regressoras). O modelo estatístico de uma regressão linear múltipla com $k$ variáveis regressoras $(X_1, X_2, ..., X_k)$ é:
+
+$Y_i = \beta_0 + \beta_1X_{i1} + \beta_2X_{i2} + ... + \beta_kX_{ik} + \varepsilon_i$
+
+ou na forma parametrizada com variéveis centradas:
+
+$Y_i = \alpha + \beta_1x_{i1} + \beta_2x_{i2} + ... + \beta_kx_{ik} + \varepsilon_i$
+
+Em notação matricial, o modelo de regressão linear múltipla fica:
+
+$Y = X\theta + \varepsilon = \mu + \varepsilon$
+
+em que $Y$ é o vetor de dimensões $n \times 1$ da variével aleatória Y, $X$ é a matriz de dimensões $n \times p$, temos $\theta$ como sendo o vertor de dimensões $p \times 1$ , de parâmetros desconhecidos, $\varepsilon$ é o vetor de dimensões $n \times 1$ das variáveis aleatórias não observáveis.
+
+De forma semelhante a regressão linear simples, têm-se as suposições
+
+1.  A variável resposta $Y$ é função linear das variáveis explicativas $X_j$ para $j = 1, 2, ..., k$
+2.  As variáveis explicativas $X_j$ são fixas
+3.  $E(\varepsilon_i) = 0$ , ou seja, $E(\varepsilon) = \textbf{0}$, sendo $\textbf{0}$ o vetor nulo de dimensões $n \times 1$
+4.  Os erros são *homocedásticos*, isto é, $Var(\varepsilon_i) = E(\varepsilon^2_i) = \sigma^2$
+5.  Os erros são *independentes*, isto é, $Cov(\varepsilon_1, \varepsilon_j) = 0$ se $i \neq j$
+6.  Os erros têm distribuição normal
+
+**OBS:** A suposição da normalidade dos erros se dás necessária para a aelabioração de testes de hipóteses e obtenção de intervalos de confiança.
+
+## Estimação dos parâmetros - Método dos mínimos quadrados
+
+Podemos calcular a soma dos quadrados dos desvios $L$ , sendo esta dada pela formula:
+
+$$
+L = \sum^{n}_{i  =1} \varepsilon^2_i = (Y - X\theta)^T(Y-X\theta)
+$$
+
+O Estimador por minimos quadrados será $\hat{\theta}$ , sendo este solução para $\theta$ nas equações $$\frac{\partial L}{\partial \theta} = 0$$
+
+Utilizando propriedades de matrizes podemos concluir que:
+
+$X^TX\hat{\theta} = X^Ty \Rightarrow [X^TX]\hat{\theta} = X^Ty \Rightarrow \hat{\theta} = (X^TX)^{-1}X^TY$
+
+Resolvendo assim a última igualdade, temos os parametros para o modelo que minimiozam a função soma dos desvios $L$.
+
+### Exemplo - Satisfação de Pacienrtes em um Hospital
+
+Primeiro vamos importar o conjunto de dados para o calculo do modelo de regressão, este conjunto de dados é sobre o nivel de satisfaçção de visistantes a um dado hospital, com base em alguns parametros como ansiedade e idade do paciente por exemplo.
+
+```{r}
+library(readxl)
+exemplo_dados_reg <- read_excel("exemplo_dados_reg.xlsx")
+View(exemplo_dados_reg)
+```
+
+Neste exemplo a variavel $Y$ será os valores de satisfação dos pacientes **Satisfaction**, sendo que vamos verificar o quando os parametros $X_1$ **Age**, $X_2$ **Saverti**, $X_3$ **Surg-Med** e $X_4$ **Anxiety** explicam sobre $Y$ .
+
+Feito isso, vamos calcular a matrix $X$ inserindo uma linha extra somente com valores 1's no lugar da primeira linha, aumentando assim em uma linha a matriz com os nossos dados, feito isso será calculada $X^T$ .
+
+```{r}
+X <- matrix(1, nrow = 25, ncol = 5)
+M <- exemplo_dados_reg
+N <- as.matrix(M)
+
+for (j in 1:25){
+  for (k in rev(1:4)){
+    X[j, k+1] = N[j, k]
+  }
+}
+
+X
+```
+
+Calculando agora $X^TX$
+
+```{r}
+XtX <- t(X)%*%X
+XtX
+```
+
+Calculando a inversa $(X^TX)^{-1}$
+
+```{r}
+in_XtX <- solve(XtX)
+in_XtX
+```
+
+Multiplicando agora $X^T$ por $Y$ temos:
+
+```{r}
+Y <- matrix(0, nrow = 25, ncol = 1)
+for (i in 1:25){
+  Y[i,1] = N[i,5]
+}
+
+Xty <- t(X)%*%Y
+Xty
+```
+
+Deste modo, podemos finalmente calcular $\hat{\theta}$ como sendo $\hat{\theta} = (X^TX)^{-1}X^TY$.
+
+```{r}
+theta <- in_XtX %*% Xty
+theta
+```
+
+## Propriedades Estatística dos Estimadores por Mínimos Quadrados
+
+O modelo ajustado é dado em sua forma matricila por $\hat{Y} = X\hat{\theta}$. Com isso podemos realizar uma análise dos desvios padrão dos residuos $\varepsilon$, sendo estes dados como $\varepsilon = y  - \hat{y}$.
+
+Para calcular o desvio padrão dos residuos, utilizamos a fórmula
+
+$$
+\hat{\sigma}^2 = \frac{\sum^{n}_{i=1}\varepsilon^2_i}{n - p} = \frac{SS_E}{n - p}
+$$
+
+Sendo que $n$ é o número de observaçoes e $p$ é o número de parâmetros em nosso modelo.
+
+Para determinarmos o desvio padrão dos residuos dos estimadores $\hat{\theta}_0, \hat{\theta}_1, ... \hat{\theta}_{p-1}$, precisamos calcular primeiro a matrix $C$:
+
+$$
+C = (X^TX)^{-1} = \begin{bmatrix}C_{00} & C_{01} & \cdots & C_{0(p-1)}\\C_{10} & C_{11} & \cdots & C_{1(p-1)}\\
+\vdots & \vdots & \ddots & \vdots\\ C_{(p-1)0} & C_{(p-1)1} & \cdots & C_{(p-1)(p-1)}\end{bmatrix}
+$$
+
+Podemos obter a matriz de covariancia $Cov(\hat{\theta})$ multiplicando a matriz $C$ pela estimativa do desvio padrão dos residuos $\hat{\sigma}^2$:
+
+$$
+Cov(\hat{\theta}) = \hat{\sigma}^2(X^TX)^{-1} = \hat{\sigma}^2C
+$$
+
+O *desvio padrão dos estimadores por minimos quadrados* do estimador $\hat{\theta}_j$ denotado por $Se(\hat{\theta}_j)$, com $j = 0, 1, ..., p -1$ é determinado por tomarmos a raiz quadrada do produto de $\hat{\sigma}^2$ e o *j-ésimo elemento da diagonal pricipla de* $C$.
+
+$$
+Se(\hat{\theta}_j) = \sqrt{\hat{\sigma}^2C_{jj}}
+$$
+
+### Voltando ao Exemplo dos Pacientes
+
+Note que já temos calculado o valor da matriz $C$, sendo esta `in_XtX` . Assim vamos calcular as predições feitas pelo modelo fazendo $\hat{Y} = X\hat{\theta}$.
+
+```{r}
+Y_chap = X%*%theta
+Y_chap
+```
+
+Com isso calculamos os residuos fazendo $\varepsilon = Y - \hat{Y}$.
+
+```{r}
+res = Y - Y_chap
+res
+```
+
+Logo, agora podemos calcular $SS_E$ (soma dos quadros dos residuos), bem como dividir isso por $n - p$ (número de observações menos o número de parâmetros), sendo que neste exemplo $n = 25$ e $p = 5$ .
+
+```{r}
+quad = res^2
+SSe = sum(quad)
+sigma_chap = sqrt(SSe/(25 - 5))
+sigma_chap
+```
+
+Deste modo podemos construir um vetor cujo cada entrada correspode ao desvio padrão dos nossos estimadores $\hat{\theta}_k$, com $k = 0, 1, ..., 4$.
+
+```{r}
+Se_theta = matrix(0, nrow = 5, ncol = 1)
+for (i in 1:5){
+  Se_theta[i,1] = sqrt(sigma_chap^2*in_XtX[i,i])
+}
+```
+
+Logo temos o vetor $\hat{\theta}$ com os parâmetros do nosso modelo conseguidos por meio do método dos minimos quadrados:
+
+```{r}
+theta
+```
+
+E o vetor $Se(\hat{\theta})$ com os respoectivos desvios padrôes de cada parâmetros:
+
+```{r}
+Se_theta
+```
+
+## Testes de Hipoteses no Modelo de Regressão Multipla
+
+Existem dois testes de hipóteses que podemos realizar em um modelo linear de regressão múltipla, sendo estes:
+
+1.  **Teste da Significancia do Modelo:** Testa se o modelo como um todo é apropriado para descrever os dados em estudo, verificadno assim se existe alguma correlação nos dados que pode sex explicada por meio de um modelo linear.
+2.  **Teste Individual dos Coeficientes de Regressão**: Verifica se os coeficientes são significaticvos de forma individual. Caso não sejam, podemos remover estes do modelo.
+
+Vamos utilizar a análise de variância ANOVA par5a avlaiarmos a variabilidade dos dados, para tal vamos dividir a variabilidade total dos dados $SS_T = \sum^{n}_{i=1}(y_i - \overline{y})^2$ em duas partes:
+
+-   $SS_R = \sum^{n}_{i=1}(\hat{y}_i - \overline{y})^2$ *soma dos quadrados da regressão*, com $p-1$ graus de liberdade. É o quadrado da diferença dos dados preditos pelo modelo para com a média.
+
+-   $SS_E = \sum^{n}_{i=1}(y_i - \hat{y}_i)^2$ a *soma dos quadrados dos residuos*, calcula a soma dos quadrados dos dados observados para com as prediçoes feitas pelo modelo, possuindo $n-p$ graus de liberdade.
+
+Sendo que temos $SS_T = SS_R + SS_E$. Para o modelo de regressão ser significativo, precisamos que a maior parte da variabilidade dos dados seja explicada pelo modelo, caso contrario, podem haver mais fatores que influenciam nos dados e que não estamos levando em conta em nosso modelo.
+
+Assim, para um modelo significativo, precisamos que $\frac{SS_R}{SS_T}$ seja *consideravelmente grande*, no geral nos normalizamos tanto $SS_R$ quanto $SS_E$ pelos seus graus de liberdade, de modo que:
+
+$$
+\frac{MS_R}{MS_E} = \frac{\frac{SS_R}{p-1}}{\frac{SS_E}{n-p}} = \frac{SS_R(n-p)}{SS_E(p-1)}
+$$
+
+Sendo $MS_R$ e $MS_E$ as respectivas normalizações pelos graus de liberdade de $SS_R$ e $SS_E$ . Lembrando que:
+
+-   $n$ : Número de observações.
+
+-   $p$ : Quantidade de parâmetros do modelo.
+
+Note agora que $SS_T = \sum^{n}_{i=1}(y_i - \overline{y})^2 = s^2(n-1)$, sendo $s^2$ a variancia amostral dos dados.
+
+## 1. Teste da Significancia do Modelo
+
+Realizaremos o teste com base nas seguintes hipóteses:
+
+-   $H_0$ : $\theta = 0$
+
+-   $H_1$ : $\theta_j \neq 0$, para pelo menos um $j$
+
+A hipótese $H_0$ implica o *modelo nulo*, onde o vetor dos parâ,etros é o vetor nulo.
+
+Co mo estamos calculandop a divisão de duas grandezas ao quadrado, isto é, $\frac{MS_R}{MS_E}$, vamios realizar o teste de hipóteses com, base na distribuição $F$.
+
+Assim:
+
+$$
+f_0 =\frac{MS_R}{MS_E} = \frac{SS_R(n-p)}{SS_E(p-1)}
+$$
+
+e vamos verificar a condição $f_0 > f_{\alpha,(p-1),(n-p)}$, que caso verdadeira, rejeitamos $H_0$ e aceitamos $H_1$ a um cero nível de significancia.
+
+**(Duvida: Eu vi no video que em boa parte de experimento reais esse texte de hipóteses não é muito útil, por que?)**
+
+### Criando a tabela ANOVA
+
+Para calcular os respectivos parâmetros para o teste de hipóteses, como estamos lidando com vários parâmetros, utilizamos uma tabela *ANOVA* da análise das variâncias da regressão e do residuo.
+
+| Fonte da Variação | Soma dos Quadrados | Graus de Liberdade | Médias dos Quadrados | $F_0$ |
+|---------------|---------------|---------------|---------------|---------------|
+| **Regressão** | $SS_R$ | $p-1$ | $MS_R = SS_R/(p-1)$ | $MS_R/MS_E$ |
+| **Erro (Residuo)** | $SS_E$ | $n-p$ | $MS_E = SS_E/(n-p)$ |  |
+| **Total** | $SS_T$ | $n-1$ |  |  |
+
+: tabela ANOVA
+
+### Realizando o teste
+
+Primeiro, vamos calcular os respectivos valores presentes na tabela da *ANOVA*.
+
+```{r}
+SSE_vec = matrix(0, nrow = 25, ncol = 1)
+for (i in 1:25){
+  SSE_vec[i,1] = (res[i,1])^2
+}
+SSE = sum(SSE_vec)
+
+SST = (sd(Y))^2*24
+
+SSR = SST - SSE
+
+MSR = SSR/4
+MSE = SSE/(25-5)
+
+f0 = MSR/MSE
+f0
+```
+
+Feito isso, podemos calcular nosso *p-valor* segundo a distribuição $F$, calculando assim a probabilidade de $f_0 > f_{\alpha,(p-1),(n-p)}$.
+
+```{r}
+p_valor = pf(f0, 4, 20, lower.tail = FALSE)
+p_valor
+```
+
+Sendo assim, considerando um nivel de significância de **95%**, temos $\alpha = 0,05$. Como $p \approx  6.95 *10^{-10} << 0,05$ , rejeitamos $H_0$ e aceitamos $H1$ .
+
+Portanto, $\theta_j \neq 0$, para pelo menos um $j$ , a um nivel de significância de **95%**.
+
+## 2. Teste Individual dos Coeficientes de Regressão
+
+Agora as hipóteses que vamos considerar no teste são:
+
+-   $H_0$ : $\theta_j = \theta_{j0}$
+
+-   $H_1$ : $\theta_j \neq \theta_{j0}$ , sendo tipicamente $\theta_{j0} = 0$
+
+A estatística do teste, caso $\theta_{j0}$ agora é dada por:
+
+$$
+T_{j0} = \frac{\hat{\theta}_j - \theta_{j0}}{\sqrt{\sigma^2C_{jj}}} = \frac{\hat{\theta}_j}{se(\hat{\theta}_j)}
+$$
+
+em suma, estamos verificando se algum dos coeficeintes de nosso vetor dos parâmetros $\hat{\theta}$ é estatisticamente iguala a $0$.
+
+Sendo este um teste de calda dupla, vamos verificar se $|t_0|>t_{(\alpha/2), (n-p)}$, caso isso ocorra, rejeitamos $H_0$ e aceitamos $H_1$.
+
+### Realizando o teste
+
+Calculando primeiro o vetor $T_{j0}$ utilizando a fórmula ascima:
+
+```{r}
+T0 = matrix(0, nrow = 5, ncol = 1)
+for (i in 1:5){
+  T0[i,1] = theta[i,1]/Se_theta[i,1]
+}
+T0
+```
+
+Agora vgamos realizar o teste de calda dupla para cada entrada do vetor $T_0$ utilizando a distribuição *t-student*, obtendo assim o vetor $P_0$ dos *p-valores*.
+
+```{r}
+P0 = matrix(0, nrow = 5, ncol = 1)
+for (i in 1:5){
+  P0[i,1] = 2*(pt(abs(T0[i,1]), 20, lower.tail = FALSE))
+}
+P0
+```
+
+Assumindo agora um nivel de significância de **95%**, obtendo assim $\alpha = 0,05$, vamos ver quais *p-valores* são maiores que $\alpha$.
+
+```{r}
+verificador = matrix(0, nrow = 5, ncol = 1)
+for (i in 1:5){
+  if (P0[i,1] > 0.05){
+    verificador[i,1] = 0
+  } else {
+    verificador[i,1] = 1
+  }
+}
+verificador
+```
+
+Note que para os parâmetros $\hat{\theta_3}$ e $\hat{\theta}_4$ não rejeitamos $H_0$, logo estes são estatísticamentes iguais a zero, para um nível de confiança de **95%**, podendo assim serem removidos do modelo.
+
+Interpretando os dados, temos que os únicos parâmetros que possuem alguma influencia na satisfação dos clientes, são aqueles correspondentes a $\hat{\theta_1}$ e a $\hat{\theta_2}$, isto é, a **Idade do paciente** e a **gravidade da sua condição médica.**
+
+-- Mudar "significancia" para "fonfiança".
