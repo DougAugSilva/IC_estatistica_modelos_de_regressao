@@ -15,3 +15,4 @@ Este repositório tem como objetivo registrar os estudos feitos por mim em minha
 
 ## Sumário
 - ### [Delineamento Inteiramente Causalisado (DIC)](https://github.com/DougAugSilva/IC_estatistica_modelos_de_regressao/blob/main/Delineamento_Inteiramente_Causalisado_(DIC)_no_R.ipynb)
+- ### [Regressão Linear Múltipla](https://github.com/DougAugSilva/IC_estatistica_modelos_de_regressao/blob/main/Regress%C3%A3o_Linear_Multipla.ipynb)
