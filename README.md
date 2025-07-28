@@ -6,7 +6,7 @@
 - **Aluno** : Douglas Augusto da Silva
 - **Professor** : Rodrigo Pescim
 ## Explicações Gerais
-Este repositório tem como objetivo registrar os estudos feitos por mim em minha Iniciação Científica em estatística, na área de aprendizado de máquina, especificamente em modelos de regressão. Fui orientado pelo Professor Doutor Rodrigo Pescim da Universidade estadual de Londrina - UEL do departamento de estatística. Afirmo que a maior parte do conteúdo aqui presente se baseia em suas aulas e slides, bem como em explicações feitas por ele a mim pessoalmente, sendo o meu trabalho apenas compilar e estruturar em  forma notebooks do R o conhecimento passado a  mim por ele.
+Este repositório tem como objetivo registrar os estudos feitos por mim em minha Iniciação Científica em estatística, na área de aprendizado de máquina. Fui orientado pelo Professor Doutor Rodrigo Pescim da Universidade estadual de Londrina - UEL do departamento de estatística. Afirmo que a maior parte do conteúdo aqui presente se baseia em suas aulas e slides, bem como em explicações feitas por ele a mim pessoalmente, sendo o meu trabalho apenas compilar e estruturar em  forma notebooks do R o conhecimento passado a  mim por ele.
 
 ## Objetivos do Repositório
 - Organizar o conteúdo de forma a facilitar futuras consultas e revisões.
